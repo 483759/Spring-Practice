@@ -228,3 +228,131 @@ create table Member(
 - 미래까지 이 조건을 만족하는 자연키는 찾기 어렵다. 대리키(대체키)를 사용하자
 - 예를 들어 주민등록번호도 기본 키로 적합하지 않다
 - **권장: Long + 대체키 + 키 생성전략 사용**
+
+## 연관관계 매핑
+
+> 객체지향 설계의 목표는 자율적인 객체들의 협력 공동체를 만드는 것이다
+> - 조영효(객체지향의 사실과 오해)
+
+![relation](/hellojpa/img/relation.png)
+
+#### 객체를 테이블에 맞추어 모델링
+(외래 키 식별자를 직접 다룸)
+
+Member Class
+
+    @Entity
+    public class Member {
+      @Id @GeneratedValue
+      private Long id;
+
+      @Column(name = "USERNAME", nullable = false, length = 20)
+      private String name;
+      private int age;
+      
+      @Column(name="TEAM_ID")
+      private Long teamId;
+    }
+
+
+Team Class
+
+    @Entity
+    public class Team {
+      @Id @GeneratedValue
+      private Long id;
+      private String name;
+    }
+
+식별자로 다시 조회, 객체지향적인 방법이 아님
+
+    //조회
+    Member findMember = em.find(Member.class, member.getId());
+
+    //연관관계가 없음
+    Team findTeam = em.find(Team.class, team.getId());
+
+연관관계가 없기 때문에 관계를 가진 테이블이더라도 따로 가져와야 한다
+객체를 테이블에 맞추어 데이터 중심으로 모델링하면, 협력 관계를 만들 수 없다
+- 테이블은 외래 키로 join을 사용해서 연관된 테이블을 찾는다
+- 객체는 참조를 사용해서 연관된 객체를 찾는다
+- 테이블과 객체 사이에는 이런 큰 간격이 있다
+<br>
+
+### 연관관계 매핑 이론 - 단방향 매핑
+
+![one-way](img/oneway.png)
+
+**Member Class**
+
+    @Entity
+    public class Member {
+      @Id @GeneratedValue
+      private Long id;
+
+      @Column(name = "USERNAME", nullable = false, length = 20)
+      private String name;
+      private int age;
+      
+      @ManyToOne
+      @JoinColumn(name = "TEAM_ID")
+      private Team team;
+    }
+
+Code
+
+    Team team = new Team();
+    team.setName("TeamA");
+    em.persist(team);
+    
+    Member member = new Member();
+    member.setName("윤이진");
+    member.setTeam(team);	//단방향 연관관계 설정, 참조 저장
+
+    //조회
+    Member findMember = em.find(Member.class, member.getId());
+    
+    //연관관계 생성
+    Team findTeam = findMember.getTeam();
+
+##### 실행 결과
+![table_1](img/table_1.png)
+
+    Hibernate: 
+    select
+        member0_.id as id1_0_0_,
+        member0_.age as age2_0_0_,
+        member0_.USERNAME as USERNAME3_0_0_,
+        member0_.TEAM_ID as TEAM_ID4_0_0_,
+        team1_.id as id1_1_1_,
+        team1_.name as name2_1_1_ 
+    from
+        Member member0_ 
+    left outer join
+        Team team1_ 
+            on member0_.TEAM_ID=team1_.id 
+    where
+        member0_.id=?
+
+#### @ManyToOne
+- fetch = FetchType.XXXX
+  - EAGER
+  - LAZY: 연관된 테이블의 컬럼을 직접 조회할 때 join(지연 로딩)
+    - 현업에서 권장. 꼭 필요한 경우에만 EAGER 옵션 사용
+<br>
+
+### 연관관계 매핑 이론 - 양방향 매핑
+
+![bidirectional](img/bidirectional.png)
+
+**Team Class**
+
+    @Entity
+    public class Team {
+      @Id @GeneratedValue
+      private Long id;
+      private String name;
+      
+      @OneToMany(mappedBy = "team")
+      List<Member> members = new ArrayList<Member>();
+    }
