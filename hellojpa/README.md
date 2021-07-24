@@ -234,7 +234,7 @@ create table Member(
 > 객체지향 설계의 목표는 자율적인 객체들의 협력 공동체를 만드는 것이다
 > - 조영효(객체지향의 사실과 오해)
 
-![relation](/hellojpa/img/relation.png)
+![relation](/hellojpa/img/relation.PNG)
 
 #### 객체를 테이블에 맞추어 모델링
 (외래 키 식별자를 직접 다룸)
@@ -281,7 +281,7 @@ Team Class
 
 ### 연관관계 매핑 이론 - 단방향 매핑
 
-![one-way](img/oneway.png)
+![one-way](img/oneway.PNG)
 
 **Member Class**
 
@@ -316,7 +316,7 @@ Code
     Team findTeam = findMember.getTeam();
 
 ##### 실행 결과
-![table_1](img/table_1.png)
+![table_1](img/table_1.PNG)
 
     Hibernate: 
     select
@@ -343,7 +343,7 @@ Code
 
 ### 연관관계 매핑 이론 - 양방향 매핑
 
-![bidirectional](img/bidirectional.png)
+![bidirectional](img/bidirectional.PNG)
 
 **Team Class**
 
