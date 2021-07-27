@@ -25,12 +25,15 @@ public class Main {
 			em.persist(team);
 			
 			Member member = new Member();
-			//member.setId(100L);
 			member.setName("윤이진");
-			member.setTeam(team);	//단방향 연관관계 설정, 참조 저장
+//			member.setTeam(team);	//단방향 연관관계 설정, 참조 저장
 			//member.setMemberType(MemberType.ADMIN);
 			
+//			member.setTeam(team);
+			
 			em.persist(member);
+
+			team.getMembers().add(member);
 			
 			em.flush();
 			em.clear();
