@@ -25,14 +25,11 @@ public class Main {
 			em.persist(team);
 			
 			Member member = new Member();
-			member.setName("윤이진");
-//			member.setTeam(team);	//단방향 연관관계 설정, 참조 저장
-			//member.setMemberType(MemberType.ADMIN);
-			
-//			member.setTeam(team);
+			member.setName("hello");
+			member.setTeam(team);	//단방향 연관관계 설정, 참조 저장
 			
 			em.persist(member);
-
+			
 			team.getMembers().add(member);
 			
 			em.flush();
@@ -40,8 +37,14 @@ public class Main {
 			
 		    //조회
 		    Member findMember = em.find(Member.class, member.getId());
-		    //연관관계 생성
 		    Team findTeam = findMember.getTeam();
+			System.out.println("findTeam = " + findTeam);
+
+			//영속성 컨텍스트에서 관리 X
+			//em.detach(findMember);
+
+			findMember.setName("t아카데미");
+
 		    
 		    //연관관계가 없음
 		    //Team findTeam = em.find(Team.class, team.getId());

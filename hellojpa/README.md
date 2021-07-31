@@ -1,8 +1,11 @@
 # JPA-test
+
 JPA, H2 개발 환경 구축 실습
 
 ## 기본 설정
+
 ### H2 Database
+
 - http://www.h2database.com/
 - 최고의 실습용 DB
 - 가볍다(1.5M)
@@ -11,23 +14,27 @@ JPA, H2 개발 환경 구축 실습
 - 시퀀스, AUTO INCREMENT 기능 지원
 
 #### 실행 방법
+
       >> cd C:\h2-2019-10-14\h2\bin
       >> h2.bat
       
       localhost:8082 접속 확인
 
 ### Maven
+
 - https://maven.apache.org/
 - 자바 라이브러리, 빌드 관리
 - 라이브러리 자동 다운로드 및 의존성 관리
 
 ### persistence.xml
+
 - JPA 설정 파일
 - /META-INF/persistence.xml 위치
 - javax.persistence로 시작: JPA 표준 속성
 - hibernate로 시작: 하이버네이트 전용 속성
 
 ### 데이터베이스 방언
+
 ![dialect](img/dialect.png)
 - JPA는 특정 데이터베이스에 종속적이지 않은 기술
 - 각각의 데이터베이스가 제공하는 SQL 문법과 함수는 조금씩 다르다
@@ -41,6 +48,7 @@ JPA, H2 개발 환경 구축 실습
 - 하이버네이트는 45가지 방언 지원
 
 ### 데이터베이스 스키마 자동 생성하기
+
 - DDL을 애플리케이션 실행 시점에 자동 생성
 - 테이블 중심 -> 객체 중심
 - 데이터베이스 방언을 활용해서 데이터베이스에 맞는 적절한 DDL 생성
@@ -54,6 +62,7 @@ JPA, H2 개발 환경 구축 실습
   - none: 사용하지 않음
 
 #### create option을 사용했을 때
+
 : 이미 존재하는 table을 drop한 뒤 다시 생성
 
     Hibernate: 
@@ -69,6 +78,7 @@ JPA, H2 개발 환경 구축 실습
         )
 
 #### 데이터베이스 스키마 자동 생성하기 주의
+
 - *운영 장비에서는 절대 create, create-drop, update 사용하면 안된다*
 - 개발 초기 단계는 create 또는 update
 - 테스트 서버는 update 또는 validate
@@ -157,6 +167,7 @@ create table Member(
 |@Transient|매핑하지 않는 필드|
 
 #### @Column
+
 - 가장 많이 사용됨
 - name: 필드와 매핑할 테이블의 컬럼 이름
 - insertable, updatable: 읽기 전용
@@ -165,6 +176,7 @@ create table Member(
 - columnDefinition, length, precision, scale(DDL)
 
 #### @Temporal
+
 - 날짜 타입 매핑
 
       @Temporal(TemporalType.DATE)
@@ -177,6 +189,7 @@ create table Member(
       private Date timestamp;     //날짜와 시간
 
 #### @Enumerated
+
 - 열거형 매핑
 - EnumType.ORDINAL: 순서를 저장(기본값)
 - EnumType.STRING: 열거형 이름을 그대로 저장, 가급적 이것 사용
@@ -185,6 +198,7 @@ create table Member(
       private RoleType roleType;
 
 #### @Lob
+
 - CLOB, BLOB 매핑
 - CLOB: String, char[], java.sql.CLOB
 - BLOB: byte[], java.sql.BLOB
@@ -196,6 +210,7 @@ create table Member(
       private byte[] lobByte;
 
 #### @Transient
+
 - 이 필드는 매핑하지 않는다.
 - 애플리케이션에서 DB에 저장하지 않는 필드
 
@@ -213,6 +228,7 @@ create table Member(
 
 
 #### 식별자 매핑 방법
+
 - @Id(직접 매핑)
 - @GeneratedValue
   - **IDENTITY**: 데이터베이스에 위임, MySQL
@@ -221,9 +237,11 @@ create table Member(
   - **TABLE**: 키 생성용 테이블 사용, 모든 DB에서 사용
     - @TableGenerator 필요
   - **AUTO**: 방언에 따라 자동 지정, 기본값
+
 <br>
 
 #### 권장하는 식별자 전략
+
 - 기본 키 제약 조건: null 아님, 유일, 변하면 안된다
 - 미래까지 이 조건을 만족하는 자연키는 찾기 어렵다. 대리키(대체키)를 사용하자
 - 예를 들어 주민등록번호도 기본 키로 적합하지 않다
@@ -237,6 +255,7 @@ create table Member(
 ![relation](/hellojpa/img/relation.PNG)
 
 #### 객체를 테이블에 맞추어 모델링
+
 (외래 키 식별자를 직접 다룸)
 
 Member Class
@@ -274,6 +293,7 @@ Team Class
 
 연관관계가 없기 때문에 관계를 가진 테이블이더라도 따로 가져와야 한다
 객체를 테이블에 맞추어 데이터 중심으로 모델링하면, 협력 관계를 만들 수 없다
+
 - 테이블은 외래 키로 join을 사용해서 연관된 테이블을 찾는다
 - 객체는 참조를 사용해서 연관된 객체를 찾는다
 - 테이블과 객체 사이에는 이런 큰 간격이 있다
@@ -316,6 +336,7 @@ Code
     Team findTeam = findMember.getTeam();
 
 ##### 실행 결과
+
 ![table_1](img/table_1.PNG)
 
     Hibernate: 
@@ -335,6 +356,7 @@ Code
         member0_.id=?
 
 #### @ManyToOne
+
 - fetch = FetchType.XXXX
   - EAGER
   - LAZY: 연관된 테이블의 컬럼을 직접 조회할 때 join(지연 로딩)
@@ -367,6 +389,7 @@ Code
 <br>
 
 #### 연관관계의 주인과 mappedBy
+
 - mappedBy = JPA의 멘붕 클래스 1
 - mappedBy는 처음에는 이해하기 어렵다
 - **객체와 테이블 간의 연관관계를 맺는 차이**를 이해해야 한다
@@ -374,6 +397,7 @@ Code
 <br>
 
 #### 객체와 테이블이 관계를 맺는 차이
+
 - 객체 연관관계
   - 회원 -> 팀 연관관계 1개(단방향)
   - 팀 -> 회원 연관관계 1개(단방향)
@@ -383,6 +407,7 @@ Code
 <br>
 
 #### ⭐ 객체의 양방향 관계 ⭐
+
 - **객체의 양방향 관계는** 사실 양방향 관계가 아니라 **서로 다른 단방향 관계 2개**다
 - 객체를 양방향으로 참조하려면 단방향 연관관계를 2개 만들어야 한다
   - A -> B(a.getB())
@@ -391,6 +416,7 @@ Code
 <br>
 
 #### 테이블의 양방향 연관관계
+
 - 테이블은 외래 키 하나로 두 테이블의 연관관계를 정리
 - MEMBER.TEAM_ID 외래 키 하나로 양방향 연관관계를 가짐(양쪽으로 조인할 수 있다)
 
@@ -410,7 +436,9 @@ Code
 ![birelational2](img/bidirectional2.PNG)
 
 #### 연관관계의 주인(Owner)
+
 ##### 양방향 매핑 규칙
+
 - 객체의 두 관계 중 하나를 연관관계의 주인으로 지정
 - **연관관계의 주인만이 외래 키를 관리(등록, 수정)**
 - **주인이 아닌 쪽은 읽기만 가능**
@@ -453,6 +481,7 @@ Code
 <br>
 
 #### 누구를 주인으로?
+
 - 외래 키가 있는 곳을 주인으로 정해라
 - 여기서는 Member.team이 연관관계의 주인
 
@@ -463,6 +492,7 @@ Code
 <br>
 
 #### 양방향 매핑 시 가장 많이 하는 실수
+
 (연관관계의 주인에 값을 입력하지 않음)
 
       Team team = new Team();
@@ -480,6 +510,7 @@ Code
 <br>
 
 #### 양방향 매핑 시 연관관계의 주인에 값을 입력해야 한다
+
 (순수한 객체 관계를 고려하면 항상 양쪽 다 값을 입력해야 한다)
 -> 실제 양방향 매핑 구현 시 양쪽 다 값 입력을 권장 !
 
@@ -499,6 +530,7 @@ Code
 <br>
 
 ### 양방향 매핑의 장점
+
 - **단방향 매핑만으로도 이미 연관관계 매핑 완료**
 - 양방향 매핑은 반대 방향으로 조회(객체 그래프 탐색) 기능이 추가된 것 뿐
 - JPQL에서 역방향으로 탐색할 일이 많음
@@ -507,6 +539,7 @@ Code
 <br>
 
 ## 다양한 매핑 어노테이션
+
 - 다대일(@ManyToOne)
 - 일대다(@OneToMany)
 - 일대일(@OneToOne)
@@ -514,13 +547,305 @@ Code
 - @JoinColumn, @JoinTable
 
 ### 상속 관계 매핑 어노테이션
+
 - @Inheritance
 - @DiscriminatorColumn
 - @DiscriminatorValue
 - @MappedSuperclass(매핑 속성만 상속)
 
 ### 복합키 어노테이션
+
 - @IdClass
 - @EmbeddedId
 - @Embeddable
 - @Mapsld
+
+## JPA 내부 구조
+
+1. **영속성 컨텍스트**
+2. **프록시와 즉시로딩, 지연로딩**
+
+### JPA에서 가장 중요한 것 2가지?
+
+- 객체와 관계형데이터베이스 매핑하기(Object Relational Mapping)
+- **영속성 컨텍스트**
+
+![connection](img/connection.PNG)
+<br>
+
+### 영속성 컨텍스트란?
+
+- JPA를 이해하는 데 가장 중요한 용어
+- "엔티티를 영구 저장하는 환경"
+- 영속성 컨텍스트는 논리적인 개념. 눈에 보이지 않는다
+- **엔티티 매니저를 통해 영속성 컨텍스트에 접근**
+
+      EntityManager.persist(entity);
+
+![pc](img/pc.PNG)
+<br>
+
+### 엔티티의 생명주기
+
+![lc](img/en_lifecycle.PNG)
+- 비영속 (new/transient)
+  - 영속성 컨텍스트와 전혀 관계가 없는 상태
+- 영속 (managed)
+  - 영속성 컨텍스트에 저장된 상태
+- 준영속 (detached)
+  - 영속성 컨텍스트에 저장되었다가 분리된 상태
+- 삭제 (removed)
+  - 삭제된 상태
+<br>
+
+#### 비영속 (new/transient)
+
+![new](img/new.PNG)
+
+    //객체를 생성한 상태(비영속)
+    Member member = new Member();
+    member.setId("member1");
+    member.setUsername("회원1");
+<br>
+
+#### 영속 (managed)
+
+: 영속성 컨텍스트 내에서 관리된다
+
+![managed](img/managed.PNG)
+
+    //객체를 생성한 상태(비영속)
+    Member member = new Member();
+    member.setId("member1");
+    member.setUsername("회원1");
+
+    EntityManager em = emf.createEntityManager();
+    em.getTransaction().begin();
+
+    //객체를 저장한 상태(영속)
+    em.persist(member);
+<br>
+
+
+#### 준영속(detached), 삭제 (removed)
+
+    //회원 엔티티를 영속성 컨텍트스에서 분리, 준영속 상태
+    em.detach(member);
+
+    //객체를 삭제한 상태(삭제)
+    em.remove(member);
+<br>
+
+**DB에 넣어버리면 되지 왜 entityManager(영속 컨텍스트)로 관리를 할까?**
+<br>
+
+### ⭐ 영속성 컨텍스트의 이점 ⭐
+
+- 1차 캐시
+- 동일성(identity) 보장
+- 트랜잭션을 지원하는 쓰기 지연(transactional write-behind)
+- 변경 감지(Dirty Checking)
+- 지연 로딩(Lazy Loading)
+
+### 영속성 컨텍스트의 동작 과정
+
+<br>
+
+##### 엔티티 조회, 1차 캐시
+
+![em1](img/em1.PNG)
+
+    //엔티티를 생성한 상태(비영속)
+    Member member = new Member();
+    member.setId("member1");
+    member.setUsername("회원1");
+
+    //엔티티를 영속
+    em.persist(member);
+
+<br>
+
+##### 1차 캐시에서 조회
+
+![em2](img/em2.PNG)
+
+    Member member = new Member();
+    member.setId("member1");
+    member.setUsername("회원1");
+
+    //1차 캐시에 저장됨
+    em.persist(member);
+
+    //DB로 바로 가지 않고 *1차 캐시에서 조회*
+    //서로 공유하지 않는 (트랜잭션 내에서만 존재하는) 캐시
+    Member findMember = em.find(Member.class, "member1");
+
+<br>
+
+##### 데이터베이스에서 조회
+
+![em3](img/em3.PNG)
+
+    Member findMember2 = em.find(Member.class, "member2");
+
+<br>
+
+##### 영속 엔티티의 동일성 보장
+
+    Member a = em.find(Member.class, "member1");
+    Member b = em.find(Member.class, "member2");
+
+    //동일성 비교. True
+    System.out.println(a == b);
+
+1차 캐시로 반복 가능한 읽기(REPEATABLE READ)등급의 트랜잭션 격리 수준을 데이터베이스가 아닌 애플리케이션 차원에서 제공
+
+<br>
+
+##### 엔티티 등록 - 트랜잭션을 지원하는 쓰기 지연
+
+![em4](img/em4.PNG)
+![em6](img/em6.PNG)
+
+    EntityManager em = emf.createEntityManager();
+    EntityTransaction transaction = em.getTransaction();
+    //엔티티 매니저는 데이터 변경시 트랜잭션을 시작해야 한다
+
+    transaction.begin();    //트랜잭션 시작
+
+    em.persist(memberA);
+    em.persist(memberB);
+    //여기까지 INSERT SQL을 데이터베이스에 보내지 않는다
+
+    //커밋하는 순간 데이터베이스에 INSERT SQL을 보낸다(Flush)
+    transaction.commit();   //트랜잭션 커밋
+
+<br>
+
+##### 엔티티 수정 - 변경 감지
+
+![em7](img/em7.PNG)
+
+    EntityManager em = emf.createEntityManager();
+    EntityTransaction transaction = em.getTransaction();
+    transaction.begin();    //트랜잭션 시작
+
+    //영속 엔티티 조회
+    Member memberA = em.find(Member.class, "memberA");
+
+    //영속 엔티티 데이터 수정
+    memberA.setUsername("Hi");
+    memberA.setAge(10);
+
+    //em.update(member)   이런 코드가 있어야 하지 않을까 .. ?
+
+    transaction.commit();   //트랜잭션 커밋
+
+JPA를 Flush하는 시점에 바뀐 값이 있다면 DB에 UPDATE 쿼리를 보내게 됨
+-> 값만 바꿔도 JPA에서 조회해서(영속 상태) 변경상태를 감지
+
+<br>
+
+### 플러시
+
+: 영속성 컨텍스트의 변경내용을 데이터베이스에 반영
+
+#### 플러시 발생
+
+- 변경 감지
+- 수정된 엔티티 쓰기 지연 SQL 저장소에 등록
+- 쓰기 지연 SQL 저장소의 쿼리를 데이터베이스에 전송(등록, 수정, 삭제 쿼리)
+
+#### 영속성 컨텍스트를 플러시하는 방법
+
+- em.flush() - 직접 호출
+- 트랜잭션 커밋 - 플러시 자동 호출
+- JPQL 쿼리 실행 - 플러시 자동 호출
+
+#### JPQL 쿼리 실행시 플러시가 자동으로 호출되는 이유
+
+    em.persist(memberA);
+    em.persist(memberB);
+    em.persist(memberC);
+
+    //중간에 JPQL 실행
+    query = em.createQuery("select m from Member m", Member.class);
+    List<Member> members = query.getResultList();
+
+#### 플러시는!
+
+- 영속성 컨텍스트를 비우지 않음
+- 영속성 컨텍스트의 변경내용을 데이터베이스에 동기화
+- **트랜잭션이라는 작업 단위가 중요** -> 커밋 직전에만 동기화하면 됨
+
+<br>
+
+### 준영속 상태
+
+- 영속 -> 준영속
+- 영속 상태의 엔티티가 영속성 컨텍스트에서 분리(detached)
+- 영속성 컨텍스트가 제공하는 기능을 사용 못함
+
+#### 준영속 상태로 만드는 방법
+
+- em.detach(entity): 특정 엔티티만 준영속 상태로 전환
+- em.clear(): 영속성 컨텍스트를 완전히 초기화
+- em.close(): 영속성 컨텍스트를 종료
+
+<br>
+
+### 지연 로딩
+
+#### Member를 조회할 때 Team도 조회해야 할까?
+
+단순히 member 정보만 사용하는 비즈니스 로직
+
+    println(member.getName());
+
+#### 지연 로딩 LAZY을 사용해서 프록시로 조회
+
+프록시 객체를 만들어 실제 사용되는 시점에 Team을 초기화 !!
+
+![loading1](img/loading1.PNG)
+
+    @Entity
+    public class Member {
+
+      @Id
+      @GeneratedValue
+      private Long id;
+
+      @Column(name = "USERNAME")
+      private String name;
+
+      @ManyToOne(fetch = FetchType.LAZY)
+      @JoinColumn(name = "TEAM_ID")
+      private Team team
+    }
+
+#### 즉시 로딩 EAGER를 사용해서 함께 조회
+
+    @Entity
+    public class Member {
+
+      @Id
+      @GeneratedValue
+      private Long id;
+
+      @Column(name = "USERNAME")
+      private String name;
+
+      @ManyToOne(fetch = FetchType.EAGER)  //현업에서는 사용하지 않음
+      @JoinColumn(name = "TEAM_ID")
+      private Team team
+      ..
+    }
+
+#### 프록시와 즉시로딩 주의
+
+- **가급적 지연 로딩을 사용**
+- 즉시 로딩을 적용하면 예상하지 못한 SQL이 발생
+- 즉시 로딩은 JPQL에서 N + 1 문제를 일으킴
+- @ManyToOne, @OneToOne은 기본이 즉시 로딩 -> LAZY로 설정
+- @OneToMany, @ManyToMany는 기본이 지연 로딩
+
