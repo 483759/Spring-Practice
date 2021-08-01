@@ -1045,3 +1045,300 @@ JPA를 Flush하는 시점에 바뀐 값이 있다면 DB에 UPDATE 쿼리를 보�
           em.createNamedQuery("Member.findByUsername", Member.class)
                 .setParameter("username", "회원1")
                 .getResultList();
+
+<br>
+
+## Spring Data JPA
+
+<br>
+
+### 스프링 데이터 JPA 소개
+
+- 지루하게 반복되는 CRUD 문제를 세련된 방법으로 해결
+- 개발자는 인터페이스만 작성
+- Spring Data JPA가 구현 객체를 동적으로 생성해서 주입
+ 
+<br>
+
+### 스프링 데이터 JPA 적용 전 <-> 후
+
+    public class MemberRepository{
+      public void save(Member member) {...}
+      public Member findOne(Long id) {...}
+      public List<Member> findAll() {...}
+      public Member findByUsername(String username) {...}
+    } 
+
+    public class ItemRepository{
+      public void save(Item item) {...}
+      public Item findOne(Long id) {...}
+      public List<Item> findAll() {...}
+    }
+
+<br>
+
+    public interface MemberRepository extends JpaRepository<Member, Long>{
+      Member findByUsername(String username);   //공통되지 않은 메서드는 직접 정의
+    }
+
+    public interface ItemRepository extends JpaRepository<Item, Long>{
+      //비어있음
+    }
+
+<br>
+
+### 스프링 데이터 JPA 적용 후 클래스 다이어그램
+
+![sdj1](img/sdj1.PNG)
+![sdj2](img/sdj2.PNG)
+
+<br>
+
+### 공통 인터페이스 기능
+
+![sdj3](img/sdj3.PNG)
+
+<br>
+
+### 쿼리 메서드 기능
+
+- **메서드 이름으로 쿼리 생성**
+  
+      public interface MemberRepository extends JpaRepository<Member, Long>{
+        List<Member> findByUsername(String username);
+      }
+
+      // 실행된 SQL
+      // SELECT * FROM MEMBER M WHERE M.NAME = 'hello'
+
+- 이름으로 검색 + 정렬
+
+      public interface MemberRepository extends JpaRepository<Member, Long>{
+        List<Member> findByUsername(String username, Sort sort);
+      }
+
+      // 실행된 SQL
+      // SELECT * FROM MEMBER M WHERE M.NAME = 'hello' ORDER BY AGE DESC
+
+- 이름으로 검색 + 정렬 + 페이징
+
+      Pageable page = new PageRequest(1, 20, new Sort ...);
+      Page<Member> result = memberRepository.findByUsername("hello", page);
+
+      int total = result.getTotalElements();    //전체 수
+      List<Member> members = result.getContent();   //데이터
+
+  - 전체 페이지 수, 다음 페이징을 위한 API 다 구현되어 있음
+
+- @Query 어노테이션으로 쿼리 직접 정의
+
+      @Query("select m from Member m where m.username = "?1")
+      Member findByUsername(String username, Pageable pageable);
+
+- 반환 타입
+
+      List<Member> findByUsername(String name);   //컬렉션
+      Member findByEmail(String email);   //단건
+
+<br>
+
+
+#### Web 페이징과 정렬 기능
+
+- 컨트롤러에서 페이징 처리 객체를 바로 받을 수 있음
+- page: 현재 페이지
+- size: 한 페이지에 노출할 데이터 건수
+- sort: 정렬 조건    
+
+      /members?page=0&size=20&sort=name,desc
+
+      @RequestMapping(value = "/members", method = RequestMethod.GET)
+      String list(Pageable pageable, Model model) {}
+
+<br>
+
+#### Web 도메인 클래스 컨버터 기능
+
+- 컨트롤러에서 식별자로 도메인 클래스 찾음
+
+      /members/100
+
+      @RequestMapping("members/{memberId}")
+      Member member(@PathVariable("memberId") Member member){
+        return member;
+      }
+
+<br>
+
+
+## QueryDSL
+
+- SQL, JPQL을 코드로 작성할 수 있도록 도와주는 빌더 API
+- JPA 크리테리아에 비해 편리하고 실용적
+- 오픈소스
+
+<br>
+
+### SQL, JPQL의 문제점
+
+- SQL, JPQL은 문자, Type-Check 불가능
+- 해당 로직 실행 전까지 작동여부 확인 불가
+
+      SELECT * FROM MEMBERR WHERE MEMBER_ID = '100'
+      //실행 시점에 오류 발견
+
+<br>
+      
+### QueryDSL 장점
+
+- 문자가 아닌 **코드**로 작성
+- **컴파일 시점에 문법 오류 발견**
+- 코드 자동완성(IDE 도움)
+- 단순하고 쉬움: 코드 모양이 JPQL과 거의 비슷
+- 동적 쿼리
+
+<br>
+ 
+### QueryDSL - 동작원리 쿼리타입 생성
+
+![qd1](img/qd1.PNG)
+
+    //JPQL
+    select m from Member m where m.age > 18
+
+    JPAFactoryQuery query = new JPAQueryFactory(em);
+    QMember m = QMember.member;
+
+    List<Member> list = 
+        query.selectFrom(m)
+             .where(m.age.gt(18))
+             .orderBy(m.name.desc())
+             .fetch();
+
+<br>
+ 
+### QueryDSL - 조인
+
+    JPAFactoryQuery query = new JPAQueryFactory(em);
+    QMember m = QMember.member;
+    QTeam m = QTeam.QTeam;
+
+    List<Member> list = 
+        query.selectFrom(m)
+             .join(m.team, t)
+             .where(t.name.eq("teamA"))
+             .fetch();
+
+<br>
+
+### QueryDSL - 페이징 API
+
+    JPAFactoryQuery query = new JPAQueryFactory(em);
+    QMember m = QMember.member;
+
+    List<Member> list = 
+        query.selectFrom(m)
+             .orderBy(m.name.desc())
+             .offset(10)
+             .limit(20)
+             .fetch();
+
+<br>
+ 
+### QueryDSL - 동적 쿼리
+
+    String name = "member";
+    int age = 9;
+
+    QMember m = QMember.member;
+
+    BooleanBuilder builder = new BooleanBuilder();
+    if(name != null){
+      builder.and(m.name.contains(name));
+    }
+    if(age != 0){
+      builder.and(m.age.gt(age));
+    }
+
+    List<Member> list = 
+        query.selectFrom(m)
+             .where(builder)
+             .fetch();
+
+<br>
+
+### QueryDSL - 이것은 자바다!
+
+    return query.selectFrom(coutpon)
+                .where(
+                  coupon.type.eq(typeParam),
+                  coupon.status.eq("LIVE"),
+                  marketing.viewCount.lt(markting.maxCount)
+                )
+                .fetch();
+
+<br>
+
+제약조건 조립 가능
+- 가독성, 재사용
+
+    return query.selectFrom(coutpon)
+                .where(
+                  coupon.type.eq(typeParam),
+                  isServiceable()
+                )
+                .fetch();
+
+    private BooleanExpression isServiceable() {
+      return coupon.status.eq("LIVE")
+                .and(marketing.viewCount.lt(markting.maxCount));
+    }
+
+<br>
+
+## +실무 경험 공유
+
+- 배달의민족 같은 경우 Spring Boot + Spring Data JPA + QueryDSL 사용
+- 테이블 중심에서 객체 중심으로 객체 패러다임이 변화
+- 유연한 데이터베이스 변경의 장점과 테스트
+  - JUnit 통합 테스트 시 H2 DB 메모리 모드
+  - 로컬 PC에는 H2 DB 서버 모드로 실행
+  - 개발 운영은 MySQL, Oracle
+- 데이터베이스 변경 경험(개발 도중 MySQL -> Oracle 바뀐 적도 있다)
+- 테스트, 통합 테스트 시에 CRUD는 믿고 간다
+- 빠른 오류 발견
+  - 컴파일 시점!
+  - 늦어도 애플리케이션 로딩 시점
+- (최소한 쿼리 문법 실수나 오류는 거의 발생하지 않는다)
+- 대부분 비즈니스 로직 오류
+- JPA 자체로 인한 성능 저하 이슈는 거의 없음
+- 성능 이슈 대부분은 JPA를 잘 이해하지 못해 발생
+  - 즉시 로딩: 쿼리가 튐 -> 지연 로딩으로 변경
+  - N+1 문제: 대부분 페치 조인으로 해결
+- 내부 파서 문제: 2000줄 짜리 동적 쿼리 생성 1초
+  - 정적 쿼리로 변경(하이버네이트는 파싱된 결과 재사용)
+- 단순 코딩 시간 줄어듬 -> 개발 생산성 향상 -> 잉여 시간 발생
+- 비즈니스 로직 작성 시 흐름이 끊기지 않음
+- 남는 시간에 더 많은 테스트 작성
+- 남는 시간에 기술 공부
+- 남는 시간에 코드 금칠
+- 팀원 대부분 다시는 과거로 돌아가고 싶어하지 않음
+
+<br>
+
+### 많이 하는 질문
+
+1. ORM 프레임워크를 사용하면 SQL과 데이터베이스는 잘 몰라도 되나요?
+   - 오히려 더 잘 알아야 한다. DB를 모르고 ORM을 쓰는 것은 말이 안 된다.
+2. 성능이 느리진 않나요?
+   - 최적화 할 수 있는 포인트가 많다(잘쓰면)
+3. 통계 쿼리처럼 매우 복잡한 SQL은 어떻게 하나요?
+   - 진짜 복잡하면 QueryDSL로 DTO 뽑고 그것도 안되면 Native로 뽑는다
+4. MyBatis와 어떤 차이가 있나요?
+   - 마이바티스는 단순 쿼리매퍼
+5. 하이버네이트 프레임워크를 신뢰할 수 잇나요?
+   - 요즘 IT회사는 디폴트로 JPA 쓰고있음
+6. 제 주위에는 MyBatis(iBatis, myBatis)만 사용하는데요?
+   - SI에서는 아직 많이 도입하지 않음
+7. 학습 곡선이 높다고 하던데요?
+   - 높긴함. 일주일 공부해서 평생 시간 아끼세요
