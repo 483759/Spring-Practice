@@ -2,6 +2,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch DtypeApplication",
+            "request": "launch",
+            "mainClass": "com.example.dtype.DtypeApplication",
+            "projectName": ""
+        },
+        {
+            "type": "java",
             "name": "Launch Main",
             "request": "launch",
             "mainClass": "hellojpa.Main",
