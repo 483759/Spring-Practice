@@ -23,3 +23,12 @@
        ├ mockito
        ├ assertj
        └ spring-test
+
+## Server Side View 설정
+
+👉 주로 Thymeleaf 사용
+
+    정적 페이지
+    /src/main/resources/static 내부에 저장
+    동적 페이지
+    /src/main/resources/templates 내부에 저장
