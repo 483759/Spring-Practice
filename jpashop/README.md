@@ -144,12 +144,468 @@ https://spring.io/projects/spring-boot
 > (실제 테이블에서는 외래 키와 관련된 튜플을 바꿔야 함! 어디 값이 바뀌었을 때 외래 키를 바꿔야 되지? 객체는 변경 포인트가 두 곳이지만 테이블은 한쪽만 관계를 가지기 때문에 **연관관계의 주인**이라는 개념을 설정)  
 > ex) Member, Order 클래스가 있을 때 Order에는 필드 변수로 Member가 있다 -> Order가 Member를 가지고 있어 더 가까우므로 Order가 연관관계의 주인이다
 
+<br>
+
 ## 엔티티 클래스 개발
 
 - Getter는 열고, Setter는 꼭 필요한 경우에만 사용하는 것을 추천
+  - Entity 데이터는 조회할 일이 굉장히 많으므로 Getter는 모두 열어두는 것이 편리
+  - Setter를 호출하면 데이터가 변함
+  - Entity가 어떻게 변경되는지 추적하기 힘들어짐
+  - Setter 대신 **변경 지점을 명확하게 하기 위한 비즈니스 메서드**를 별도로 제공
+    - 생성자에서 값을 모두 초기화해서 변경 불가능한 클래스를 만들자.
+    - JPA 스펙 상 엔티티/임베디드 타입은 자바 기본 생성자를 <code>public</code>또는 <code>protected</code>로 설정해야 한다. JPA 구현 라이브러리가 객체를 생성할 때 리플렉션 같은 기술을 사용할 수 있도록 지원해야 하기 때문
+- Entity 식별자는 <code>id</code>를 사용하고 PK 컬럼명은 <code>테이블명+id</code>을 사용한다(관례상). 다른 명명 규칙도 괜찮지만 일관성을 지킬 것
 - LocalDateTime을 쓰면 자동으로 날짜 매핑을 해준다
 - @Enumerated를 쓸 때 EnumType.ORDINAL을 쓰면 수정했을 때 다 밀린다 !! STRING을 쓰자
 - 1대1 관계에서는 어디에 외래 키? 접근을 많이 하는 곳에 
+- 실무에서 N대M 관계에 @ManyToMany를 쓰지 않는 이유
+  - 중개 테이블에 필드를 더 추가하지 못함
+  - 활용성 X
+
+### 예제 테이블 생성 SQL문
+
+<details>
+<summary>코드 보기</summary>
+
+```Bash
+2021-09-14 08:56:58.394 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    create table category (
+       category_id bigint not null,
+        name varchar(255),
+        parent_id bigint,
+        primary key (category_id)
+    )
+Hibernate: 
+    
+    create table category (
+       category_id bigint not null,
+        name varchar(255),
+        parent_id bigint,
+        primary key (category_id)
+    )
+2021-09-14 08:56:58.395  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418395 | took 0ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    create table category (
+       category_id bigint not null,
+        name varchar(255),
+        parent_id bigint,
+        primary key (category_id)
+    )
+
+    create table category (
+       category_id bigint not null,
+        name varchar(255),
+        parent_id bigint,
+        primary key (category_id)
+    );
+2021-09-14 08:56:58.395 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    create table category_item (
+       category_id bigint not null,
+        item_id bigint not null
+    )
+Hibernate: 
+    
+    create table category_item (
+       category_id bigint not null,
+        item_id bigint not null
+    )
+2021-09-14 08:56:58.396  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418396 | took 0ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    create table category_item (
+       category_id bigint not null,
+        item_id bigint not null
+    )
+
+    create table category_item (
+       category_id bigint not null,
+        item_id bigint not null
+    );
+2021-09-14 08:56:58.397 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    create table delivery (
+       delivery_id bigint not null,
+        city varchar(255),
+        street varchar(255),
+        zipcode varchar(255),
+        status varchar(255),
+        primary key (delivery_id)
+    )
+Hibernate: 
+    
+    create table delivery (
+       delivery_id bigint not null,
+        city varchar(255),
+        street varchar(255),
+        zipcode varchar(255),
+        status varchar(255),
+        primary key (delivery_id)
+    )
+2021-09-14 08:56:58.398  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418398 | took 0ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    create table delivery (
+       delivery_id bigint not null,
+        city varchar(255),
+        street varchar(255),
+        zipcode varchar(255),
+        status varchar(255),
+        primary key (delivery_id)
+    )
+
+    create table delivery (
+       delivery_id bigint not null,
+        city varchar(255),
+        street varchar(255),
+        zipcode varchar(255),
+        status varchar(255),
+        primary key (delivery_id)
+    );
+2021-09-14 08:56:58.398 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    create table item (
+       dtype varchar(31) not null,
+        item_id bigint not null,
+        name varchar(255),
+        price integer not null,
+        stock_quantity integer not null,
+        artist varchar(255),
+        etc varchar(255),
+        author varchar(255),
+        isbn varchar(255),
+        actor varchar(255),
+        director varchar(255),
+        primary key (item_id)
+    )
+Hibernate: 
+    
+    create table item (
+       dtype varchar(31) not null,
+        item_id bigint not null,
+        name varchar(255),
+        price integer not null,
+        stock_quantity integer not null,
+        artist varchar(255),
+        etc varchar(255),
+        author varchar(255),
+        isbn varchar(255),
+        actor varchar(255),
+        director varchar(255),
+        primary key (item_id)
+    )
+2021-09-14 08:56:58.399  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418399 | took 0ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    create table item (
+       dtype varchar(31) not null,
+        item_id bigint not null,
+        name varchar(255),
+        price integer not null,
+        stock_quantity integer not null,
+        artist varchar(255),
+        etc varchar(255),
+        author varchar(255),
+        isbn varchar(255),
+        actor varchar(255),
+        director varchar(255),
+        primary key (item_id)
+    )
+
+    create table item (
+       dtype varchar(31) not null,
+        item_id bigint not null,
+        name varchar(255),
+        price integer not null,
+        stock_quantity integer not null,
+        artist varchar(255),
+        etc varchar(255),
+        author varchar(255),
+        isbn varchar(255),
+        actor varchar(255),
+        director varchar(255),
+        primary key (item_id)
+    );
+2021-09-14 08:56:58.399 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    create table member (
+       member_id bigint not null,
+        city varchar(255),
+        street varchar(255),
+        zipcode varchar(255),
+        name varchar(255),
+        primary key (member_id)
+    )
+Hibernate: 
+    
+    create table member (
+       member_id bigint not null,
+        city varchar(255),
+        street varchar(255),
+        zipcode varchar(255),
+        name varchar(255),
+        primary key (member_id)
+    )
+2021-09-14 08:56:58.400  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418400 | took 0ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    create table member (
+       member_id bigint not null,
+        city varchar(255),
+        street varchar(255),
+        zipcode varchar(255),
+        name varchar(255),
+        primary key (member_id)
+    )
+
+    create table member (
+       member_id bigint not null,
+        city varchar(255),
+        street varchar(255),
+        zipcode varchar(255),
+        name varchar(255),
+        primary key (member_id)
+    );
+2021-09-14 08:56:58.401 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    create table order_item (
+       order_item_id bigint not null,
+        count integer not null,
+        order_price integer not null,
+        item_id bigint,
+        order_id bigint,
+        primary key (order_item_id)
+    )
+Hibernate: 
+    
+    create table order_item (
+       order_item_id bigint not null,
+        count integer not null,
+        order_price integer not null,
+        item_id bigint,
+        order_id bigint,
+        primary key (order_item_id)
+    )
+2021-09-14 08:56:58.402  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418402 | took 1ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    create table order_item (
+       order_item_id bigint not null,
+        count integer not null,
+        order_price integer not null,
+        item_id bigint,
+        order_id bigint,
+        primary key (order_item_id)
+    )
+
+    create table order_item (
+       order_item_id bigint not null,
+        count integer not null,
+        order_price integer not null,
+        item_id bigint,
+        order_id bigint,
+        primary key (order_item_id)
+    );
+2021-09-14 08:56:58.402 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    create table orders (
+       order_id bigint not null,
+        order_date timestamp,
+        status varchar(255),
+        delivery_id bigint,
+        member_id bigint,
+        primary key (order_id)
+    )
+Hibernate: 
+    
+    create table orders (
+       order_id bigint not null,
+        order_date timestamp,
+        status varchar(255),
+        delivery_id bigint,
+        member_id bigint,
+        primary key (order_id)
+    )
+2021-09-14 08:56:58.403  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418403 | took 1ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    create table orders (
+       order_id bigint not null,
+        order_date timestamp,
+        status varchar(255),
+        delivery_id bigint,
+        member_id bigint,
+        primary key (order_id)
+    )
+
+    create table orders (
+       order_id bigint not null,
+        order_date timestamp,
+        status varchar(255),
+        delivery_id bigint,
+        member_id bigint,
+        primary key (order_id)
+    );
+2021-09-14 08:56:58.404 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    alter table category 
+       add constraint FK2y94svpmqttx80mshyny85wqr 
+       foreign key (parent_id) 
+       references category
+Hibernate: 
+    
+    alter table category 
+       add constraint FK2y94svpmqttx80mshyny85wqr 
+       foreign key (parent_id) 
+       references category
+2021-09-14 08:56:58.406  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418406 | took 2ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    alter table category 
+       add constraint FK2y94svpmqttx80mshyny85wqr 
+       foreign key (parent_id) 
+       references category
+
+    alter table category 
+       add constraint FK2y94svpmqttx80mshyny85wqr 
+       foreign key (parent_id) 
+       references category;
+2021-09-14 08:56:58.406 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    alter table category_item 
+       add constraint FKu8b4lwqutcdq3363gf6mlujq 
+       foreign key (item_id) 
+       references item
+Hibernate: 
+    
+    alter table category_item 
+       add constraint FKu8b4lwqutcdq3363gf6mlujq 
+       foreign key (item_id) 
+       references item
+2021-09-14 08:56:58.408  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418408 | took 1ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    alter table category_item 
+       add constraint FKu8b4lwqutcdq3363gf6mlujq 
+       foreign key (item_id) 
+       references item
+
+    alter table category_item 
+       add constraint FKu8b4lwqutcdq3363gf6mlujq 
+       foreign key (item_id) 
+       references item;
+2021-09-14 08:56:58.409 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    alter table category_item 
+       add constraint FKcq2n0opf5shyh84ex1fhukcbh 
+       foreign key (category_id) 
+       references category
+Hibernate: 
+    
+    alter table category_item 
+       add constraint FKcq2n0opf5shyh84ex1fhukcbh 
+       foreign key (category_id) 
+       references category
+2021-09-14 08:56:58.411  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418411 | took 1ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    alter table category_item 
+       add constraint FKcq2n0opf5shyh84ex1fhukcbh 
+       foreign key (category_id) 
+       references category
+
+    alter table category_item 
+       add constraint FKcq2n0opf5shyh84ex1fhukcbh 
+       foreign key (category_id) 
+       references category;
+2021-09-14 08:56:58.411 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    alter table order_item 
+       add constraint FKija6hjjiit8dprnmvtvgdp6ru 
+       foreign key (item_id) 
+       references item
+Hibernate: 
+    
+    alter table order_item 
+       add constraint FKija6hjjiit8dprnmvtvgdp6ru 
+       foreign key (item_id) 
+       references item
+2021-09-14 08:56:58.413  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418413 | took 2ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    alter table order_item 
+       add constraint FKija6hjjiit8dprnmvtvgdp6ru 
+       foreign key (item_id) 
+       references item
+
+    alter table order_item 
+       add constraint FKija6hjjiit8dprnmvtvgdp6ru 
+       foreign key (item_id) 
+       references item;
+2021-09-14 08:56:58.414 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    alter table order_item 
+       add constraint FKt4dc2r9nbvbujrljv3e23iibt 
+       foreign key (order_id) 
+       references orders
+Hibernate: 
+    
+    alter table order_item 
+       add constraint FKt4dc2r9nbvbujrljv3e23iibt 
+       foreign key (order_id) 
+       references orders
+2021-09-14 08:56:58.416  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418416 | took 1ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    alter table order_item 
+       add constraint FKt4dc2r9nbvbujrljv3e23iibt 
+       foreign key (order_id) 
+       references orders
+
+    alter table order_item 
+       add constraint FKt4dc2r9nbvbujrljv3e23iibt 
+       foreign key (order_id) 
+       references orders;
+2021-09-14 08:56:58.416 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    alter table orders 
+       add constraint FKtkrur7wg4d8ax0pwgo0vmy20c 
+       foreign key (delivery_id) 
+       references delivery
+Hibernate: 
+    
+    alter table orders 
+       add constraint FKtkrur7wg4d8ax0pwgo0vmy20c 
+       foreign key (delivery_id) 
+       references delivery
+2021-09-14 08:56:58.418  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418418 | took 1ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    alter table orders 
+       add constraint FKtkrur7wg4d8ax0pwgo0vmy20c 
+       foreign key (delivery_id) 
+       references delivery
+
+    alter table orders 
+       add constraint FKtkrur7wg4d8ax0pwgo0vmy20c 
+       foreign key (delivery_id) 
+       references delivery;
+2021-09-14 08:56:58.419 DEBUG 20056 --- [  restartedMain] org.hibernate.SQL                        : 
+    
+    alter table orders 
+       add constraint FKpktxwhj3x9m4gth5ff6bkqgeb 
+       foreign key (member_id) 
+       references member
+Hibernate: 
+    
+    alter table orders 
+       add constraint FKpktxwhj3x9m4gth5ff6bkqgeb 
+       foreign key (member_id) 
+       references member
+2021-09-14 08:56:58.421  INFO 20056 --- [  restartedMain] p6spy                                    : #1631577418421 | took 2ms | statement | connection 3| url jdbc:h2:tcp://localhost/~/jpashop
+
+    alter table orders 
+       add constraint FKpktxwhj3x9m4gth5ff6bkqgeb 
+       foreign key (member_id) 
+       references member
+
+    alter table orders 
+       add constraint FKpktxwhj3x9m4gth5ff6bkqgeb 
+       foreign key (member_id) 
+       references member;
+```
+
+</details>
 
 <br>
 
