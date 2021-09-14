@@ -680,7 +680,22 @@ Hibernate:
 
 <br>
 
+## 애플리케이션 개발
+
+계층형 구조 사용
+
+- controller, web: 웹 계층
+- service: 비즈니스 로직, 트랜잭션 처리
+- repository: JPA를 직접 사용하는 계층, 엔티티 매니저 사용
+- domain: 엔티티가 모여 있는 계층, 모든 계층에서 사용
+
+> 단순 조회만 하는 경우 controller에서 repository를 바로 호출해도 무방.
+> 오히려 불필요하게 service에 처리를 위임할 경우 실용성이 떨어짐.
+
+<br>
+
 ## 단축키, 설정 관련 꿀팁
 
 > Ctrl + Shift + T - Create Test Case
 > Ctrl + Alt + V - Extract Variable
+> Ctrl + Alt + N - Inline Variable
