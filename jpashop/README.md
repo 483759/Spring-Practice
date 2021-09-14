@@ -163,6 +163,77 @@ https://spring.io/projects/spring-boot
   - 중개 테이블에 필드를 더 추가하지 못함
   - 활용성 X
 
+<br>
+
+### Entity 설계 시 주의점
+
+<br>
+
+#### Entity에는 가급적 Setter를 사용하지 말자
+
+Setter가 모두 열려있다. 변경 포인트가 너무 많아서, 유지보수가 어렵다.
+
+<br>
+
+#### ⭐모든 연관관계는 지연로딩으로 설정!⭐
+
+> 즉시 로딩(EAGER): 엔티티를 불러올 때 연관된 엔티티들을 전부 불러옴
+> 지연 로딩(LAZY): 엔티티를 불러올 때 에는 해당 엔티티만 불러오고, 엔티티의 해당 프로퍼티에 접근할 때 불러옴
+
+- 즉시 로딩(EAGER)는 예측이 어렵고, 어떤 SQL이 실행되는지 추적하기 어렵다. 특히 JPQL을 실행할 때, N+1문제가 자주 발생한다.
+- 실무에서 모든 연관관계는 **LAZY**로 설정 !!
+- 연관된 엔티티를 함께 DB에서 조회해야 하면, fetch join 또는 엔티티 그래프 기능 사용
+- **@XToOne(OneToOne, ManyToOne) 관계는 기본이 즉시로딩**이므로 직접 지연로딩으로 설정해야 함
+
+<br>
+
+#### 컬렉션은 필드에서 초기화
+
+- <code>null</code>문제에서 안전하다
+- 하이버네이트가 엔티티를 영속화 할 때, 컬렉션을 감싸서 하이버네이트 제공 내장 컬렉션으로 변경한다. 따라서 <code>getOrders()</code>처럼 임의의 메서드에서 컬렉션을 잘못 생성하면 하이버네이트 내부 메커니즘에 문제가 발생할 수 있다. 따라서 필드 레벨에서 생성하는 것이 가장 안전하고, 코드도 간결하다.
+- 따라서 컬렉션 필드는 가급적 변경하지 않는 것이 안전함 !!
+
+```java
+Member member = new Member();
+System.out.println(member.getOrders().getClass());
+em.persist(member);
+System.out.println(member.getOrders().getClass());
+
+//출력 결과
+class java.util.ArrayList
+class org.hibernate.internal.PersistentBag
+```
+
+<br>
+
+#### Cascade 옵션
+
+```java
+persist(orderItemA);
+persist(orderItemB);
+persist(orderItemC);
+persist(orderItem);
+
+->
+persist(orderItem);
+```
+해당 엔티티에 영속성을 부여할 때 Cascade 옵션이 붙은 필드의 컬렉션 내의 요소들도 전부 영속성 부여. @OneToX에 사용
+
+<br>
+
+#### N + 1 문제
+
+    //JPQL
+    select o From order o;
+
+    //SQL
+    select * from order;
+
+Order만 조회하는데 해당 element에 연관된 N개의 Member를 실행 시간에 함께 불러오게 됨
+👉 1(원하는 엔티티 조회) + N(연관된 엔티티 모두 조회)번의 SQL문이 수행됨
+
+<br>
+
 ### 예제 테이블 생성 SQL문
 
 <details>
