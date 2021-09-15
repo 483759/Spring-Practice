@@ -700,6 +700,57 @@ Hibernate:
 
 <br>
 
+## 테스트
+
+### 회원 가입 테스트
+
+```java
+    @Test
+    @Transactional
+    public void 회원가입() throws Exception {
+        //given
+        Member member = new Member();
+        member.setName("yun");
+
+        //when
+        Long savedId = memberService.join(member);
+
+        //then
+        assertEquals(member, memberRepository.findOne(savedId));
+    }
+```
+
+```
+    select
+        member0_.member_id as member_i1_4_,
+        member0_.city as city2_4_,
+        member0_.street as street3_4_,
+        member0_.zipcode as zipcode4_4_,
+        member0_.name as name5_4_ 
+    from
+        member member0_ 
+    where
+        member0_.name=?
+Hibernate: 
+    select
+        member0_.member_id as member_i1_4_,
+        member0_.city as city2_4_,
+        member0_.street as street3_4_,
+        member0_.zipcode as zipcode4_4_,
+        member0_.name as name5_4_ 
+    from
+        member member0_ 
+    where
+        member0_.name=?
+```
+
+위의 코드에서는 insert문이 실행되지 않는다.
+
+영속성 컨텍스트에 저장되어 있다가 트랜잭션이 커밋되는 순간 flush되어 DB에 SQL 쿼리를 날리는데
+@Transactional에 의해 커밋하지 않고 롤백하기 때문
+
+<br>
+
 ## 단축키, 설정 관련 꿀팁
 
 > Ctrl + Shift + T - Create Test Case
