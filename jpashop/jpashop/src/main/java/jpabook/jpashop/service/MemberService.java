@@ -12,13 +12,10 @@ import java.util.List;
 
 @Service
 @Transactional(readOnly = true)      //JPA의 모든 변경과 로직은 가급적 트랜잭션 안에서 실행되어야 함
+@RequiredArgsConstructor  //final이 있는 Field만 생성자를 만들어 줌
 public class MemberService {
 
     private final MemberRepository memberRepository;
-
-    public MemberService(MemberRepository memberRepository) {
-        this.memberRepository = memberRepository;
-    }
 
     /**
      * 회원 가입
