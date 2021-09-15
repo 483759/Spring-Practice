@@ -692,6 +692,12 @@ Hibernate:
 > 단순 조회만 하는 경우 controller에서 repository를 바로 호출해도 무방.
 > 오히려 불필요하게 service에 처리를 위임할 경우 실용성이 떨어짐.
 
+#### Injection은 Constructor Injection
+
+- Field Injection은 직접 객체를 주입하기 힘들다
+- Setter Injection은 변경 위험이 있고, 실제로 애플리케이션 실행 중 바꿀 일이 없다
+- 객체 생성 시 의존 관계를 명확하게 알 수 있다
+
 <br>
 
 ## 단축키, 설정 관련 꿀팁
