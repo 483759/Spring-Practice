@@ -1,6 +1,6 @@
 package com.example.unittest;
 
-import lombok.Data;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -9,9 +9,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
-@Getter
-@RequiredArgsConstructor
 @Entity
+@RequiredArgsConstructor
+@Getter
 public class Item {
     @Id
     @GeneratedValue
@@ -19,4 +19,11 @@ public class Item {
     private Long id;
     private String name;
     private int price;
+
+    @Builder
+    public Item(Long id, String name, int price) {
+        this.id = id;
+        this.name = name;
+        this.price = price;
+    }
 }
