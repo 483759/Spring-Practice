@@ -28,6 +28,11 @@ public class ItemServiceImpl implements ItemService{
     }
 
     @Override
+    public int getTotalAmount() {
+        return itemRepository.getTotalAmount();
+    }
+
+    @Override
     public List<Item> findAll() {
         return itemRepository.findAll();
     }

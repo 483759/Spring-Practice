@@ -1,10 +1,12 @@
 package com.example.unittest;
 
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,13 +16,13 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @Transactional
-public class ItemMockingUnitTest {
-
-    @InjectMocks
-    ItemServiceImpl itemService;
+public class ItemSpyUnitTest {
 
     @Mock
     ItemRepository itemRepo;
+
+    @Spy @InjectMocks
+    ItemServiceImpl itemSpyService;
 
     @DisplayName("상품을 등록한지 검증한다")
     @Test
@@ -32,15 +34,12 @@ public class ItemMockingUnitTest {
 
         given(itemRepo.findOneByName("피자"))
                 .willReturn(item);
-//        Mockito.when(itemRepo.findOneByName("피자"))
-//                .thenReturn(item);
 
         //when
-        itemService.saveItem(item);
+        itemSpyService.saveItem(item);
 
         //then
-        verify(itemRepo).save(item);            // 해당 메서드가 실제로 호출되었나?
-        //verify(itemRepo).findAll();
-        assertEquals(10000, itemService.findOneByName("피자").getPrice());
+        assertEquals(10000, itemSpyService.findOneByName("피자").getPrice());
+        assertEquals(0, itemSpyService.getTotalAmount());
     }
 }

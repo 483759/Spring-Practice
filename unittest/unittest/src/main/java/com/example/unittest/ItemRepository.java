@@ -33,4 +33,9 @@ public class ItemRepository {
         return em.createQuery("select i from Item i", Item.class)
                 .getResultList();
     }
+
+    public int getTotalAmount() {
+        return em.createQuery("select sum(i.price) from Item i", Item.class)
+                .getFirstResult();
+    }
 }

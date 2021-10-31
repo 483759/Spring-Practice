@@ -8,5 +8,6 @@ public interface ItemService {
     void saveItem(Item item);
     Item findOne(Long id);
     Item findOneByName(String name);
+    int getTotalAmount();
     List<Item> findAll();
 }
