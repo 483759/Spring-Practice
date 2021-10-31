@@ -1,0 +1,8 @@
+sns:
+  google:
+    url: https://accounts.google.com/o/oauth2/v2/auth
+    client:
+      id: 469734566757-1fh6uvm66n7tgfpo45vrb90mnape8cnc.apps.googleusercontent.com
+      secret: AIzaSyC40nUSL-BOkWRTl6LIDZRQ4kKBeIvsorM
+    callback:
+      url: http://localhost:8080/auth/google/callback
